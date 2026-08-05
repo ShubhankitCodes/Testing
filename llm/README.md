@@ -13,8 +13,7 @@ user wants as a structured form.
 
 ## Why it matters
 
-This is the hardest technical role and it is load-bearing. A later experiment depends 
-entirely on being able to see the model's per-token confidence numbers (logprobs). If those 
+A later experiment depends entirely on being able to see the model's per-token confidence numbers (logprobs). If those 
 are not exposed and logged, that experiment is impossible. This is exactly why we serve an 
 open model ourselves instead of using a closed API — closed APIs do not reveal these 
 numbers.
