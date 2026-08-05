@@ -1,0 +1,23 @@
+# Everyone installs with: pip install -r requirements.txt
+
+# --- audio/ ---
+faster-whisper
+piper-tts
+
+# --- retrieval/ ---
+sentence-transformers
+faiss-cpu
+
+# --- llm/ (GPU/cloud only — do not install on a laptop without a GPU) ---
+vllm
+
+# --- pipeline/ (transport) ---
+fastapi
+uvicorn
+websockets
+
+# --- configs/ ---
+pyyaml
+
+# --- shared ---
+numpy
