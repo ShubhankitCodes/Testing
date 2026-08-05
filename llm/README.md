@@ -1,6 +1,6 @@
 # llm/ — Language Model & Signals
 
-**Owner: model/signals owner**  
+**Owner: Ryan**  
 This README covers Week 1. Full signal instrumentation and the Experiment 1 label set come 
 in Week 2.
 
