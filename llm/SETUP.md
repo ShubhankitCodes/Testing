@@ -51,32 +51,52 @@ Only start a paid instance once those both pass.
 
 ### 0. Secrets
 
-Never in the repo. Two environment variables:
+Never in the repo, never pasted into chat or a ticket. Put them in a `.env`
+file at the repo root — `.gitignore` already covers `.env`, and
+`.dockerignore` keeps it out of every image layer:
 
 ```bash
-export HF_TOKEN=hf_...            # required for gated models, see table below
-export VLLM_API_KEY=...           # optional; set it if the port is public
+# voice-rag-controller/.env   (never committed)
+HF_TOKEN=hf_...          # required for gated models, see table below
+VLLM_API_KEY=...         # optional locally; required if the port is public
 ```
+
+Then pass it in rather than exporting by hand:
+
+```bash
+docker run --env-file .env ...
+set -a && . ./.env && set +a          # for running outside Docker
+```
+
+If a token is ever pasted somewhere it shouldn't be, revoke it at
+huggingface.co/settings/tokens and issue a new one. Rotating is a
+30-second job; a leaked token on a public repo is not.
 
 ### 1. Install
 
-Either install into the instance:
+Use the image. `Dockerfile` at the repo root has two targets:
 
 ```bash
-pip install -r requirements.txt
+docker build --target dev -t voice-rag-llm:dev .    # CPU, mock, ~150 MB
+docker build --target gpu -t voice-rag-llm:gpu .    # CUDA + vLLM
 ```
 
-Or skip the install entirely by using vLLM's own image, which is what we'll
-build on in Week 2:
+The `gpu` target already contains vLLM, CUDA, and our launcher, so there is
+nothing to install on the instance:
 
 ```bash
 docker run --gpus all -p 8000:8000 \
-  -e HF_TOKEN=$HF_TOKEN \
-  -v /workspace/hf-cache:/root/.cache/huggingface \
-  vllm/vllm-openai:latest \
-  --model meta-llama/Llama-3.1-8B-Instruct \
-  --dtype bfloat16 --max-model-len 8192 --max-logprobs 20
+  --env-file .env \
+  -v /workspace/models:/models \
+  -v $(pwd)/logs:/app/logs \
+  voice-rag-llm:gpu
 ```
+
+`-v /workspace/models:/models` must point at a persistent volume, or every
+new instance re-downloads ~16 GB before it can answer anything.
+
+Falling back to a bare `pip install -r requirements.txt` on the instance also
+works, but nothing about it is reproducible, so use it only to debug.
 
 ### 2. Start the server
 
@@ -116,7 +136,52 @@ moment a run finishes.
 
 ---
 
-## RunPod specifics
+## RunPod: serverless vs. pod
+
+These are two different products and they are not interchangeable for our
+purposes.
+
+**Serverless does not run our `gpu` image.** A RunPod Serverless endpoint is
+job-based: it expects a worker that implements their handler interface and
+returns a result, not a long-lived HTTP server. Deploying
+`voice-rag-llm:gpu` there won't work, because our container's job is to hold
+port 8000 open.
+
+For serverless, use RunPod's **official vLLM worker** instead of a custom
+image. Configure the endpoint with `MODEL_NAME=meta-llama/Llama-3.1-8B-Instruct`
+and your `HF_TOKEN`, and it exposes an OpenAI-compatible route. Our client
+then needs no code change at all:
+
+```bash
+VOICE_RAG_LLM_BACKEND=vllm
+VOICE_RAG_LLM_BASE_URL=https://api.runpod.ai/v2/<endpoint-id>/openai/v1
+VLLM_API_KEY=<your RunPod API key>
+```
+
+Two things to verify on the first call, because we don't control that
+worker's launch flags the way `serve.py` controls ours:
+
+1. **Logprobs come back.** vLLM's default `--max-logprobs` ceiling is 20 and
+   our `top_k` is 5, so it should work — but if you get a 400 mentioning
+   logprobs, drop `llm.logprobs.top_k` to 1 and raise it once the worker's
+   ceiling is known.
+2. **The served model name matches** `cfg["model"]`, or `health_check()`
+   reports a mismatch.
+
+### Serverless is fine for verification, wrong for latency data
+
+Serverless scales to zero, so a cold request loads ~16 GB of weights before
+it answers — tens of seconds to minutes. Every TTFT and TTFA number measured
+across a cold start is meaningless, and TTFA is this project's headline
+metric.
+
+So: **use serverless to confirm the logprobs are real and the tracker behaves
+against a live model** — that is exactly the cheap functional check this week
+needs. For Experiment 1 data collection, either set minimum workers to 1
+(always warm, which costs roughly what a pod costs) or use a GPU pod. Don't
+report timing numbers collected from a cold-starting endpoint.
+
+## RunPod pod specifics
 
 - Expose HTTP port `8000` in the pod template. RunPod gives you a proxy URL
   shaped like `https://<pod-id>-8000.proxy.runpod.net` — that becomes
