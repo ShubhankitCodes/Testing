@@ -1,33 +1,31 @@
 import json
+import sys
 from collections import defaultdict
-
-
-LOG_FILE = "sample_log.jsonl"
-# Later change to:
-# LOG_FILE = "logs/conv_001.jsonl"
 
 
 def main():
 
+    if len(sys.argv) != 2:
+        print("Usage: python replay.py <log_file>")
+        return
+
+    log_file = sys.argv[1]
+
     turns = defaultdict(list)
 
     try:
-
-        with open(LOG_FILE, "r") as file:
-
+        with open(log_file, "r") as file:
             for line in file:
-
                 line = line.strip()
 
                 if not line:
                     continue
 
                 event = json.loads(line)
-
                 turns[event["turn_id"]].append(event)
 
     except FileNotFoundError:
-        print(f"Error: {LOG_FILE} not found.")
+        print(f"Error: {log_file} not found.")
         return
 
     print("=" * 70)
@@ -51,11 +49,8 @@ def main():
             event_type = event["event_type"]
             payload = event["payload"]
 
-            if event_type == "asr_partial":
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
-
-            elif event_type == "asr_final":
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
+            if event_type in ("asr_partial", "asr_final"):
+                print(f'[{t:>4} ms] {actor:<7} {event_type:<20} "{payload["text"]}"')
 
             elif event_type == "user_end":
                 user_end = t
@@ -65,17 +60,16 @@ def main():
                 print(f"[{t:>4} ms] {actor:<7} {event_type:<20} {payload['action']}")
 
             elif event_type == "retrieval_launched":
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['query']}\"")
+                print(f'[{t:>4} ms] {actor:<7} {event_type:<20} "{payload["query"]}"')
 
             elif event_type == "retrieval_result":
-                passages = len(payload["passages"])
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} ({passages} passages)")
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} ({len(payload['passages'])} passages)")
 
             elif event_type == "llm_first_token":
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['token']}\"")
+                print(f'[{t:>4} ms] {actor:<7} {event_type:<20} "{payload["token"]}"')
 
             elif event_type == "llm_final":
-                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
+                print(f'[{t:>4} ms] {actor:<7} {event_type:<20} "{payload["text"]}"')
 
             elif event_type == "tts_first_audio":
                 first_audio = t
@@ -85,9 +79,7 @@ def main():
                 print(f"[{t:>4} ms] {actor:<7} {event_type}")
 
         if user_end is not None and first_audio is not None:
-            print(f"\nTTFA = {first_audio - user_end} ms")
-
-        print()
+            print(f"\nTTFA = {first_audio-user_end} ms")
 
 
 if __name__ == "__main__":
