@@ -77,7 +77,7 @@ huggingface.co/settings/tokens and issue a new one. Rotating is a
 Use the image. `Dockerfile` at the repo root has two targets:
 
 ```bash
-docker build --target dev -t voice-rag-llm:dev .    # CPU, mock, ~150 MB
+docker build --target dev -t voice-rag-llm:dev .    # CPU, mock, ~240 MB
 docker build --target gpu -t voice-rag-llm:gpu .    # CUDA + vLLM
 ```
 

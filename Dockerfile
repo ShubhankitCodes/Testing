@@ -6,7 +6,7 @@
 #
 # Two build targets, one file:
 #
-#   dev  — CPU only, ~150 MB. Runs the mock backend, the tracker, and the
+#   dev  — CPU only, ~240 MB. Runs the mock backend, the tracker, and the
 #          event-log tests. No GPU, no model weights, no cost. This is what
 #          you should use for everything except real data collection.
 #
