@@ -1,0 +1,5 @@
+# GPU/cloud only — install with: pip install -r requirements-gpu.txt
+# AFTER requirements.txt. Laptops do not need this.
+
+# --- llm/ ---
+vllm
