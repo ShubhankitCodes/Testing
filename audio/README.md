@@ -56,7 +56,7 @@ yet — that swap happens once the spine is ready.
 
 ### Step 4 — Log every audio event
 
-Using the shared log writer (`logging/`), record audio events in the frozen schema:
+Using the shared log writer (`eventlog/`), record audio events in the frozen schema:
 - `asr_partial` — each live guess (with `text`)
 - `asr_final` — the finalized transcription (with `text`)
 - `user_end` — when the user is judged to have stopped

@@ -45,7 +45,7 @@ whole role, not just getting answers out.
 ### Step 2 — Log the confidence numbers
 
 When the model generates, record the relevant events in the frozen log schema 
-(`logging/schema.md`):
+(`eventlog/schema.md`):
 - `llm_first_token` — the first output token
 - `llm_final` — the full answer text
 - Log the per-token logprobs alongside these so the harness and later experiments can read 

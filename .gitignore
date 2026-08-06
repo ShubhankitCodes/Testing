@@ -1,3 +1,8 @@
+# Voice-RAG Controller — conversation logs produced by running the pipeline
+# (e.g. python pipeline/spine.py). These are runtime output, not source.
+logs/
+*.jsonl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

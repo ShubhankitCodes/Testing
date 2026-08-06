@@ -84,7 +84,7 @@ separate rules, and rigorously testing whether unifying those decisions actually
 | `llm/` | Model serving with confidence numbers, and the state tracker |
 | `simulator/` | Fake-user scenario generator and answer keys |
 | `harness/` | Log reader, metrics, and the replay-to-timeline viewer |
-| `logging/` | The event-log schema and the log writer |
+| `eventlog/` | The event-log schema and the log writer |
 | `paper/` | The paper draft and supporting docs |
 | `configs/` | All settings as files, never hardcoded |
 
@@ -95,7 +95,7 @@ Each folder has its own README with that component's Week 1 goal and how to star
 ## Working rules for everyone
 
 1. Do not write any code that touches the event log until the log schema 
-   (`logging/schema.md`) is frozen. It is the shared contract that lets six people work in 
+   (`eventlog/schema.md`) is frozen. It is the shared contract that lets six people work in 
    parallel without their outputs clashing.
 2. Everything goes into this repository through your own feature branch and a pull request. 
    Nobody commits directly to `main`.

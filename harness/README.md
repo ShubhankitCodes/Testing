@@ -13,7 +13,7 @@ into a readable timeline of what happened and when.
 
 The replay viewer becomes the whole team's debugging tool for the entire month. Every time 
 someone asks "why did this conversation go wrong?", the answer comes from your timeline 
-viewer. This folder builds against the frozen log schema (`logging/schema.md`), not the 
+viewer. This folder builds against the frozen log schema (`eventlog/schema.md`), not the 
 live pipeline, so you are fully unblockable from Day 1 — you do not have to wait for anyone.
 
 ## Week 1 goal (your deliverable)
@@ -24,7 +24,7 @@ live pipeline, so you are fully unblockable from Day 1 — you do not have to wa
 
 ## Background you need first
 
-Read `logging/schema.md`. That is the exact format of the log files you will read. Every 
+Read `eventlog/schema.md`. That is the exact format of the log files you will read. Every 
 line is one JSON object with fields `t_ms`, `conversation_id`, `turn_id`, `actor`, 
 `event_type`, and `payload`. Your tools parse these lines.
 
@@ -84,4 +84,4 @@ readable timeline. The statistics helpers exist and are tested on toy inputs.
 ## Coordinate with
 
 Nobody directly for Week 1 — you build against the schema, which is frozen. Just make sure 
-you are reading the latest `logging/schema.md` if it ever updates.
+you are reading the latest `eventlog/schema.md` if it ever updates.

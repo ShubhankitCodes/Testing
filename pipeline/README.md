@@ -29,7 +29,7 @@ integrating at the end; the spine exists to prevent that by making integration c
 
 ### Step 1 — Freeze the schema first
 
-Before anything, make sure `logging/schema.md` is frozen and the shared `log_writer` helper 
+Before anything, make sure `eventlog/schema.md` is frozen and the shared `log_writer` helper 
 exists. Nothing in the pipeline should be built before the schema is set, since every stage 
 logs against it.
 

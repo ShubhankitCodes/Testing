@@ -1,4 +1,4 @@
-# logging/ — Event Log (the shared contract)
+# eventlog/ — Event Log (the shared contract)
 
 **This is the most important folder in the repo. Read it before writing any code that 
 produces or reads logs.**
