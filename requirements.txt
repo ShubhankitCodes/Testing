@@ -13,9 +13,6 @@ faiss-cpu
 # needed on every machine, including laptops running the mock backend.
 openai
 
-# GPU/cloud only — do not install on a laptop without a GPU.
-vllm
-
 # --- pipeline/ (transport) ---
 fastapi
 uvicorn
