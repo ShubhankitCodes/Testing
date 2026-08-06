@@ -1,0 +1,127 @@
+# config.yaml — all settings as files, never hardcoded.
+#
+# Rule (configs/README.md): if you find yourself typing a model name, a
+# threshold, or a path directly into code, stop and put it here instead.
+#
+# Each component owns its own top-level section. Add yours below; don't edit
+# someone else's without telling them.
+
+# ---------------------------------------------------------------------------
+# llm/ — owner: Ryan
+# ---------------------------------------------------------------------------
+llm:
+  # Which client the code talks to.
+  #   mock  — no GPU, no network. Canned answer with synthetic logprobs in the
+  #           exact shape the real server returns. Use this for all development.
+  #   vllm  — a real vLLM OpenAI-compatible server. Costs money. Real runs only.
+  # Override without editing this file: VOICE_RAG_LLM_BACKEND=vllm
+  backend: mock
+
+  # Which of the models below is live. Everything else about the system stays
+  # the same when this changes — that's the point of keeping it here.
+  # Override with: VOICE_RAG_MODEL=qwen3_8b
+  #
+  # NOTE FOR THE PAPER: Experiment 1 must be reported on ONE model, or the
+  # model becomes a confound. The other two entries are fallbacks for when a
+  # gated download is still pending — not a comparison set. Whichever is
+  # active when real data collection starts must be named in the
+  # pre-registration doc.
+  active_model: llama31_8b
+
+  models:
+    llama31_8b:
+      hf_id: meta-llama/Llama-3.1-8B-Instruct
+      # Gated on Hugging Face: accept the license on the model page, then set
+      # HF_TOKEN. Approval is not always instant — request it early.
+      gated: true
+
+    qwen3_8b:
+      hf_id: Qwen/Qwen3-8B
+      gated: false
+      # Qwen3 emits a <think> block by default. That wrecks strict-JSON
+      # tracker output and pollutes the logprob sequence with reasoning
+      # tokens that aren't part of the answer, so we turn it off at the
+      # chat-template level.
+      extra_body:
+        chat_template_kwargs:
+          enable_thinking: false
+
+    mistral7b_v03:
+      hf_id: mistralai/Mistral-7B-Instruct-v0.3
+      # Requires accepting the terms on the model page; approval is usually
+      # immediate. 7B not 8B — close enough to stand in if both others stall.
+      gated: true
+
+  # Where the client sends requests. Override with VOICE_RAG_LLM_BASE_URL,
+  # which you will need on RunPod (the proxy hostname is generated per pod).
+  server:
+    base_url: http://localhost:8000/v1
+    # vLLM accepts any key unless the server was started with --api-key.
+    # If you do set one, put it in this env var — never in this file.
+    api_key_env: VLLM_API_KEY
+    request_timeout_s: 120
+
+  # Answer generation.
+  generation:
+    max_tokens: 256
+    temperature: 0.2
+    top_p: 0.9
+
+  # THE POINT OF THIS ROLE. Experiment 1 is impossible if these are off.
+  logprobs:
+    enabled: true
+    # How many alternatives to return per position. 1 = just the chosen
+    # token's confidence. Raise it in Week 2 if the belief vector needs the
+    # runner-up distribution (entropy, margin). Must be <= serve.max_logprobs.
+    top_k: 5
+    # Write the full per-token list into the llm_final payload. Verbose, and
+    # that is deliberate: the logs are the paper's raw data.
+    log_full: true
+
+  # Flags passed to `vllm serve` by llm/serve.py. Provider-agnostic — these
+  # are the same on RunPod, Azure, or any box with a big enough card.
+  serve:
+    host: 0.0.0.0
+    port: 8000
+    # bfloat16, NOT a quantized dtype. The logprobs are the measurement
+    # instrument for Experiment 1; quantization shifts the output
+    # distribution and therefore distorts what we are trying to measure.
+    # This is why the card needs >= 24 GB for an 8B model.
+    dtype: bfloat16
+    max_model_len: 8192
+    gpu_memory_utilization: 0.90
+    # Ceiling on top_logprobs the server will honour. Must be >= logprobs.top_k.
+    max_logprobs: 20
+    # Where weights get cached. On RunPod, point this at a network volume so
+    # a destroyed pod doesn't mean re-downloading 16 GB.
+    download_dir: null
+
+  # State tracker — the JSON form describing what the user wants this turn.
+  tracker:
+    # Deterministic: this is structured extraction, not writing.
+    temperature: 0.0
+    max_tokens: 200
+    # The fixed schema. Every tracker output has exactly these keys, always.
+    # A slot we don't know is "unknown" — that is a correct answer, not an error.
+    slots:
+      intent: unknown
+      room: unknown
+      time: unknown
+      people: unknown
+      confirmed: false
+    # Slots whose value is a count and should end up as a JSON number when
+    # stated. Everything else stays a string: a room is "412" or "412A", and
+    # silently turning it into 412 would lose the second case.
+    numeric_slots:
+      - people
+
+  # Where conversation logs are written (eventlog/log_writer.py default).
+  log_dir: logs
+
+# ---------------------------------------------------------------------------
+# Other components: add your section here.
+# ---------------------------------------------------------------------------
+# retrieval:   # owner: Lakshya — embedding model, k, index path, corpus path
+# audio:       # owner: Adithi  — whisper model size, TTS voice, partial interval
+# controller:  # owner: Renya   — thresholds
+# harness:     # owner: Shubhankit — log dir, percentiles
