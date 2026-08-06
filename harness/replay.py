@@ -2,12 +2,18 @@ import json
 from collections import defaultdict
 
 
+LOG_FILE = "sample_log.jsonl"
+# Later change to:
+# LOG_FILE = "logs/conv_001.jsonl"
+
+
 def main():
 
     turns = defaultdict(list)
 
     try:
-        with open("sample.jsonl", "r") as file:
+
+        with open(LOG_FILE, "r") as file:
 
             for line in file:
 
@@ -21,52 +27,68 @@ def main():
                 turns[event["turn_id"]].append(event)
 
     except FileNotFoundError:
-        print("Error: sample.jsonl not found.")
+        print(f"Error: {LOG_FILE} not found.")
         return
 
-    print("=" * 60)
+    print("=" * 70)
     print("VOICE RAG TIMELINE")
-    print("=" * 60)
+    print("=" * 70)
 
     for turn_id in sorted(turns):
 
         print(f"\nTurn {turn_id}")
-        print("-" * 60)
+        print("-" * 70)
 
-        events = sorted(turns[turn_id], key=lambda x: x["time_ms"])
+        events = sorted(turns[turn_id], key=lambda x: x["t_ms"])
 
         user_end = None
         first_audio = None
 
         for event in events:
 
-            time = event["time_ms"]
-            name = event["event"]
+            t = event["t_ms"]
+            actor = event["actor"]
+            event_type = event["event_type"]
+            payload = event["payload"]
 
-            if name == "asr_partial":
-                print(f"[{time:>4} ms] ASR Partial : \"{event['text']}\"")
+            if event_type == "asr_partial":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
 
-            elif name == "asr_final":
-                print(f"[{time:>4} ms] ASR Final   : \"{event['text']}\"")
+            elif event_type == "asr_final":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
 
-            elif name == "user_end":
-                user_end = time
-                print(f"[{time:>4} ms] User finished speaking")
+            elif event_type == "user_end":
+                user_end = t
+                print(f"[{t:>4} ms] {actor:<7} {event_type}")
 
-            elif name == "controller_action":
-                print(f"[{time:>4} ms] Controller Action : {event['action']}")
+            elif event_type == "controller_action":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} {payload['action']}")
 
-            elif name == "retrieval_result":
-                print(f"[{time:>4} ms] Retrieved {event['passages']} passages")
+            elif event_type == "retrieval_launched":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['query']}\"")
 
-            elif name == "tts_first_audio":
-                first_audio = time
-                print(f"[{time:>4} ms] First TTS Audio")
+            elif event_type == "retrieval_result":
+                passages = len(payload["passages"])
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} ({passages} passages)")
+
+            elif event_type == "llm_first_token":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['token']}\"")
+
+            elif event_type == "llm_final":
+                print(f"[{t:>4} ms] {actor:<7} {event_type:<20} \"{payload['text']}\"")
+
+            elif event_type == "tts_first_audio":
+                first_audio = t
+                print(f"[{t:>4} ms] {actor:<7} {event_type}")
+
+            elif event_type == "barge_in":
+                print(f"[{t:>4} ms] {actor:<7} {event_type}")
 
         if user_end is not None and first_audio is not None:
             print(f"\nTTFA = {first_audio - user_end} ms")
 
         print()
+
 
 if __name__ == "__main__":
     main()
