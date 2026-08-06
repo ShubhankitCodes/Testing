@@ -221,3 +221,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+retrieval/index.faiss
+retrieval/chunks.json
+index.faiss
