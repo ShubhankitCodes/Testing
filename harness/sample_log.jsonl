@@ -1,0 +1,13 @@
+{"turn_id":1,"time_ms":0,"event":"asr_partial","text":"What time does the"}
+{"turn_id":1,"time_ms":420,"event":"asr_final","text":"What time does the pool close"}
+{"turn_id":1,"time_ms":430,"event":"user_end"}
+{"turn_id":1,"time_ms":440,"event":"controller_action","action":"retrieve"}
+{"turn_id":1,"time_ms":560,"event":"retrieval_result","passages":3}
+{"turn_id":1,"time_ms":900,"event":"tts_first_audio"}
+
+{"turn_id":2,"time_ms":0,"event":"asr_partial","text":"Where is the gym"}
+{"turn_id":2,"time_ms":350,"event":"asr_final","text":"Where is the gym located"}
+{"turn_id":2,"time_ms":360,"event":"user_end"}
+{"turn_id":2,"time_ms":370,"event":"controller_action","action":"retrieve"}
+{"turn_id":2,"time_ms":500,"event":"retrieval_result","passages":2}
+{"turn_id":2,"time_ms":760,"event":"tts_first_audio"}
