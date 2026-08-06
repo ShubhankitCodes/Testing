@@ -1,34 +1,33 @@
 import json
+import sys
 from collections import defaultdict
 
 from stats import percentile, bootstrap_confidence_interval
 
 
-LOG_FILE = "sample_log.jsonl"
-# Later change to:
-# LOG_FILE = "logs/conv_001.jsonl"
-
-
 def main():
+
+    if len(sys.argv) != 2:
+        print("Usage: python metrics.py <log_file>")
+        return
+
+    log_file = sys.argv[1]
 
     turns = defaultdict(list)
 
     try:
-        with open(LOG_FILE, "r") as file:
-
+        with open(log_file, "r") as file:
             for line in file:
-
                 line = line.strip()
 
                 if not line:
                     continue
 
                 event = json.loads(line)
-
                 turns[event["turn_id"]].append(event)
 
     except FileNotFoundError:
-        print(f"Error: {LOG_FILE} not found.")
+        print(f"Error: {log_file} not found.")
         return
 
     ttfa_list = []
@@ -58,13 +57,11 @@ def main():
             print(f"Turn {turn_id}: TTFA = {ttfa} ms")
 
     if not ttfa_list:
-        print("\nNo TTFA values found.")
+        print("No TTFA values found.")
         return
 
     average = sum(ttfa_list) / len(ttfa_list)
-
     p95 = percentile(ttfa_list, 95)
-
     ci = bootstrap_confidence_interval(ttfa_list)
 
     print("\n" + "-" * 45)
