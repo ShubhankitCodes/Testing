@@ -5,7 +5,7 @@ import faiss
 import numpy as np
 
 from sentence_transformers import SentenceTransformer
-CORPUS_DIR = CORPUS_DIR = os.path.join("retrieval", "corpus")
+CORPUS_DIR = "corpus"
 
 def load_documents():
     documents = []
