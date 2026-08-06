@@ -31,22 +31,22 @@ def load_documents():
 
 documents = load_documents()
 
-# print(f"Loaded {len(documents)} documents.")
+print(f"Loaded {len(documents)} documents.")
 
 
-# print(documents[0]["filename"])
-# print()
-# print(documents[0]["text"][:500])
+print(documents[0]["filename"])
+print()
+print(documents[0]["text"][:500])
 
-# print("Loading embedding model...")
+print("Loading embedding model...")
 
 model = SentenceTransformer("BAAI/bge-small-en-v1.5")
 
-# print("Model loaded successfully!")
+print("Model loaded successfully!")
 
 texts = [doc["text"] for doc in documents]
 
-# print("Generating embeddings...")
+print("Generating embeddings...")
 
 embeddings = model.encode(
     texts,
@@ -54,12 +54,12 @@ embeddings = model.encode(
     show_progress_bar=True
 )
 
-# print("Embeddings generated!")
+print("Embeddings generated!")
 
-# print(type(embeddings))
-# print(embeddings.shape)
+print(type(embeddings))
+print(embeddings.shape)
 
-# print(embeddings[0][:10])
+print(embeddings[0][:10])
 
 
 print("Building FAISS index...")
