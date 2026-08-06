@@ -1,0 +1,44 @@
+# Keep the build context small and secrets out of the image.
+
+# Secrets — must never be baked into a layer. HF_TOKEN and any API key are
+# passed at run time with -e / --env-file, never copied in.
+.env
+.env.*
+*.pem
+*.key
+
+# Runtime output, not source.
+logs/
+*.jsonl
+
+# Version control and editor state.
+.git/
+.gitignore
+.vscode/
+.idea/
+
+# Python build artefacts.
+__pycache__/
+*.py[codz]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+venv/
+.venv/
+
+# Model weights, if anyone has cached them locally. These are volume-mounted,
+# never copied — they would add ~16 GB to the image.
+models/
+*.safetensors
+*.bin
+*.gguf
+
+# Components this image doesn't install (see the scope note in Dockerfile).
+audio/
+retrieval/
+harness/
+simulator/
+paper/
+pipeline/
+controller/

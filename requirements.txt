@@ -8,7 +8,12 @@ piper-tts
 sentence-transformers
 faiss-cpu
 
-# --- llm/ (GPU/cloud only — do not install on a laptop without a GPU) ---
+# --- llm/ ---
+# The client speaks vLLM's OpenAI-compatible API. Safe to install anywhere —
+# needed on every machine, including laptops running the mock backend.
+openai
+
+# GPU/cloud only — do not install on a laptop without a GPU.
 vllm
 
 # --- pipeline/ (transport) ---
